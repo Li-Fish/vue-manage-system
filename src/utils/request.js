@@ -9,6 +9,10 @@ const service = axios.create({
 
 service.interceptors.request.use(
     config => {
+        let token = localStorage.getItem('token')
+        if (token) {
+            config.headers.common['token']=token
+        }
         return config;
     },
     error => {
@@ -22,12 +26,12 @@ service.interceptors.response.use(
         if (response.status === 200) {
             return response.data;
         } else {
-            Promise.reject();
+            return Promise.reject(error);
         }
     },
     error => {
         console.log(error);
-        return Promise.reject();
+        return Promise.reject(error);
     }
 );
 

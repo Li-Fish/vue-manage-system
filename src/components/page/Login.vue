@@ -28,6 +28,9 @@
 </template>
 
 <script>
+
+import { getData } from '../../api/index';
+
 export default {
     data: function() {
         return {
@@ -43,14 +46,30 @@ export default {
     },
     methods: {
         submitForm() {
+            let self = this
             this.$refs.login.validate(valid => {
                 if (valid) {
-                    this.$message.success('登录成功');
-                    localStorage.setItem('ms_username', this.param.username);
-                    this.$router.push('/');
+                    console.log(self.$data.username)
+                    getData("login", {
+                        username: this.param.username,
+                        password: this.param.password
+                    }).then(res => {
+                        console.log(res);
+                        if (res !== null && res.length > 0) {
+                            this.$message.success('登录成功');
+                            localStorage.setItem('ms_username', this.param.username);
+                            localStorage.setItem('token', res)
+                            this.$router.push('/');
+                        } else {
+                            this.$message.error('账号或密码错误');
+                            console.log('error submit!!');
+                            return false;
+                        }
+                    }).catch(error => {
+                        this.$message.error('异常错误，登录失败');
+                    });
                 } else {
                     this.$message.error('请输入账号和密码');
-                    console.log('error submit!!');
                     return false;
                 }
             });
