@@ -25,8 +25,8 @@ export default new Router({
                     meta: { title: '自定义图标' }
                 },
                 {
-                    path: '/table',
-                    component: () => import(/* webpackChunkName: "table" */ '../components/page/BaseTable.vue'),
+                    path: '/attendance_table',
+                    component: () => import(/* webpackChunkName: "table" */ '../components/page/AttendanceTable.vue'),
                     meta: { title: '基础表格' }
                 },
                 {
