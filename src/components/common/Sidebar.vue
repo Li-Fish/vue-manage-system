@@ -67,6 +67,16 @@ export default {
                     title: '考勤列表'
                 },
                 {
+                    icon: 'el-icon-lx-cascades',
+                    index: 'attendance_user_table',
+                    title: '考勤用户'
+                },
+                {
+                    icon: 'el-icon-lx-cascades',
+                    index: 'record_table',
+                    title: '考勤记录'
+                },
+                {
                     icon: 'el-icon-lx-copy',
                     index: 'tabs',
                     title: 'tab选项卡'

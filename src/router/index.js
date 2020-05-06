@@ -27,7 +27,17 @@ export default new Router({
                 {
                     path: '/attendance_table',
                     component: () => import(/* webpackChunkName: "table" */ '../components/page/AttendanceTable.vue'),
-                    meta: { title: '基础表格' }
+                    meta: { title: '考勤列表' }
+                },
+                {
+                    path: '/attendance_user_table',
+                    component: () => import(/* webpackChunkName: "table" */ '../components/page/AttendanceUserTable.vue'),
+                    meta: { title: '考勤用户' }
+                },
+                {
+                    path: '/record_table',
+                    component: () => import(/* webpackChunkName: "table" */ '../components/page/RecordTable.vue'),
+                    meta: { title: '考勤记录' }
                 },
                 {
                     path: '/tabs',

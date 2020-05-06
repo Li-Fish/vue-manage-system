@@ -3,14 +3,14 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 考勤列表
+                    <i class="el-icon-lx-cascades"></i> 考勤记录
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-input v-model="query.title_prefix" placeholder="标题" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
-                <el-input v-model="query.creator" placeholder="创建者" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
+                <el-input v-model="query.name" placeholder="姓名" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
+                <el-input v-model="query.attendance" placeholder="考勤" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
                 <el-button
                         type="danger"
@@ -30,16 +30,11 @@
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-                <el-table-column prop="title" label="标题"></el-table-column>
-                <el-table-column prop="creator" label="创建者"></el-table-column>
-                <el-table-column prop="info" label="备注"></el-table-column>
-                <el-table-column prop="type" label="类型"></el-table-column>
+                <el-table-column prop="name" label="姓名"></el-table-column>
+                <el-table-column prop="attendance_title" label="所属考勤"></el-table-column>
+                <el-table-column prop="photo" label="照片"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-button
-                            icon="el-icon-edit"
-                            @click="handleEdit(scope.$index, scope.row)"
-                        >编辑</el-button>
                         <el-button
                             type="danger"
                             icon="el-icon-delete"
@@ -59,25 +54,6 @@
                 ></el-pagination>
             </div>
         </div>
-
-        <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="标题">
-                    <el-input v-model="form.title"></el-input>
-                </el-form-item>
-                <el-form-item label="内容">
-                    <el-input v-model="form.info"></el-input>
-                </el-form-item>
-                <el-form-item label="类型">
-                    <el-input v-model="form.type"></el-input>
-                </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
-            </span>
-        </el-dialog>
     </div>
 </template>
 
@@ -88,8 +64,8 @@ export default {
     data() {
         return {
             query: {
-                title_prefix: '',
-                creator: '',
+                name: '',
+                attendance: '',
                 pageIndex: 1,
                 pageSize: 10
             },
@@ -105,12 +81,21 @@ export default {
     created() {
         this.getData();
     },
+
     activated() {
         this.getData();
     },
+
+
+    beforeRouteUpdate (to, from, next) {
+        console.log(to)
+        console.log(from)
+        console.log(23333333)
+    },
+
     methods: {
         getData() {
-            getData("attendance_table", this.query).then(res => {
+            getData("record_table", this.query).then(res => {
                 this.tableData = res.list;
                 this.pageTotal = res.total_num;
             }).catch(error => {
@@ -129,7 +114,7 @@ export default {
                 type: 'warning'
             })
                 .then(() => {
-                    getData("delete_attendance", {id: row.id}).then(res => {
+                    getData("delete_record", {id: row.id}).then(res => {
                         this.$message.success('删除成功');
                         this.tableData.splice(index, 1);
                     }).catch(error => {
@@ -154,13 +139,13 @@ export default {
             this.$confirm('确定要删除吗？', '提示', {
                 type: 'warning'
             }).then(()=>{
-                let str = '';
-                let count = 0, fail = 0
+                    let str = '';
+                    let count = 0, fail = 0
 
-                let waitList = []
+                    let waitList = []
 
-                for (let i = 0; i < length; i++) {
-                    getData("delete_attendance", {id: this.multipleSelection[i].id}).then(res => {
+                    for (let i = 0; i < length; i++) {
+                    getData("delete_record", {id: this.multipleSelection[i].id}).then(res => {
                         count += 1
                     }).catch(error => {
                         fail += 1
@@ -176,39 +161,6 @@ export default {
                     })
                 }
             })
-        },
-        // 编辑操作
-        handleEdit(index, row) {
-            this.idx = index;
-            this.form = {
-                title: row.title,
-                info: row.info,
-                type: row.type,
-                row: row
-            }
-            this.editVisible = true;
-        },
-        // 保存编辑
-        saveEdit() {
-            this.editVisible = false;
-
-            let query = {
-                id : this.tableData[this.idx].id,
-                title : this.form.title,
-                info : this.form.info,
-                type : this.form.type
-            }
-
-            getData("update_attendance", query).then(res => {
-                this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-                this.form.row.title = this.form.title;
-                this.form.row.info = this.form.info;
-                this.form.row.type = this.form.type;
-            }).catch(error => {
-                this.$message.error(`修改第 ${this.idx + 1} 行失败`);
-            });
-
-
         },
         // 分页导航
         handlePageChange(val) {
