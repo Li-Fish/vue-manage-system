@@ -12,6 +12,7 @@
                 <el-input v-model="query.title_prefix" placeholder="标题" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
                 <el-input v-model="query.creator" placeholder="创建者" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+                <el-button type="success" icon="el-icon-plus" @click="handleAdd">新增考勤</el-button>
                 <el-button
                         type="danger"
                         icon="el-icon-delete"
@@ -78,6 +79,25 @@
                 <el-button type="primary" @click="saveEdit">确 定</el-button>
             </span>
         </el-dialog>
+
+        <!-- 新增弹出框 -->
+        <el-dialog title="编辑" :visible.sync="addVisible" width="30%">
+            <el-form ref="add_form" :model="add_form" label-width="70px">
+                <el-form-item label="标题">
+                    <el-input v-model="add_form.title"></el-input>
+                </el-form-item>
+                <el-form-item label="内容">
+                    <el-input v-model="add_form.info"></el-input>
+                </el-form-item>
+                <el-form-item label="类型">
+                    <el-input v-model="add_form.type"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="addVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveAdd">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -96,8 +116,10 @@ export default {
             tableData: [],
             multipleSelection: [],
             editVisible: false,
+            addVisible: false,
             pageTotal: 0,
             form: {},
+            add_form: {},
             idx: -1,
             id: -1
         };
@@ -188,6 +210,34 @@ export default {
             }
             this.editVisible = true;
         },
+
+
+        // 新增操作
+        handleAdd() {
+            this.add_form = {
+                title: "",
+                info: "",
+                type: 1,
+            }
+            this.addVisible = true;
+        },
+
+        saveAdd() {
+            this.addVisible = false;
+            let query = {
+                title : this.add_form.title,
+                info : this.add_form.info,
+                type : this.add_form.type
+            }
+
+            getData("add_attendance", query).then(res => {
+                this.$message.success(`添加成功`);
+                this.getData()
+            }).catch(error => {
+                this.$message.error(`添加失败`);
+            });
+        },
+
         // 保存编辑
         saveEdit() {
             this.editVisible = false;

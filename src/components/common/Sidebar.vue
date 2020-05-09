@@ -62,17 +62,17 @@ export default {
                     title: '系统首页'
                 },
                 {
-                    icon: 'el-icon-lx-cascades',
+                    icon: 'el-icon-notebook-2',
                     index: 'attendance_table',
                     title: '考勤列表'
                 },
                 {
-                    icon: 'el-icon-lx-cascades',
+                    icon: 'el-icon-lx-group',
                     index: 'attendance_user_table',
                     title: '考勤用户'
                 },
                 {
-                    icon: 'el-icon-lx-cascades',
+                    icon: 'el-icon-picture-outline',
                     index: 'record_table',
                     title: '考勤记录'
                 },
