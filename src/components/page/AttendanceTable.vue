@@ -81,7 +81,7 @@
         </el-dialog>
 
         <!-- 新增弹出框 -->
-        <el-dialog title="编辑" :visible.sync="addVisible" width="30%">
+        <el-dialog title="新增" :visible.sync="addVisible" width="30%">
             <el-form ref="add_form" :model="add_form" label-width="70px">
                 <el-form-item label="标题">
                     <el-input v-model="add_form.title"></el-input>

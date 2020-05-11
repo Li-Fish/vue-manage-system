@@ -12,6 +12,7 @@
                 <el-input v-model="query.name" placeholder="姓名" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
                 <el-input v-model="query.attendance" placeholder="所属考勤" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+                <el-button type="success" icon="el-icon-plus" @click="handleAdd">新增用户</el-button>
                 <el-button
                         type="danger"
                         icon="el-icon-delete"
@@ -71,11 +72,45 @@
                 <el-button type="primary" @click="saveEdit">确 定</el-button>
             </span>
         </el-dialog>
+
+        <!-- 新增弹出框 -->
+        <el-dialog title="新增" :visible.sync="addVisible" width="30%">
+            <el-form ref="add_form" :model="add_form" label-width="70px">
+                <el-form-item label="姓名">
+                    <el-input v-model="add_form.name"></el-input>
+                </el-form-item>
+                <el-form-item label="考勤ID">
+                    <el-input v-model="add_form.attendance_id"></el-input>
+                </el-form-item>
+            </el-form>
+
+
+            <el-upload
+                    class="upload-demo"
+                    ref="upload"
+                    action="string"
+                    accept="image/jpeg,image/png,image/jpg"
+                    :file-list="fileList"
+                    :show-file-list="false"
+                    :http-request="UploadImage"
+                    :auto-upload="false"
+                    :on-change="onFileChange"
+            >
+                <img v-if="imageUrl" :src="imageUrl" class="avatar" style="width: 100%">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="addVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveAdd">确 定</el-button>
+            </span>
+        </el-dialog>
+
     </div>
 </template>
 
 <script>
-import { getData } from '../../api/index';
+import { getData, uploadFile } from '../../api/index';
 export default {
     name: 'basetable',
     data() {
@@ -89,10 +124,15 @@ export default {
             tableData: [],
             multipleSelection: [],
             editVisible: false,
+            addVisible: false,
             pageTotal: 0,
             form: {},
+            add_form: {},
             idx: -1,
-            id: -1
+            id: -1,
+
+            fileList: [],
+            imageUrl: null,
         };
     },
     created() {
@@ -102,6 +142,49 @@ export default {
         this.getData();
     },
     methods: {
+        onFileChange(file, fileList) {
+            if (fileList.length > 0) {
+                this.fileList = [fileList[fileList.length - 1]]  // 这一步，是 展示最后一次选择的csv文件
+            }
+            this.imageUrl = URL.createObjectURL(file.raw);
+        },
+
+        onBeforeUploadImage(file) {
+            const file_type = ['image/jpeg', 'image/jpg', 'image/png']
+            let isIMAGE = false;
+            for (let x of file_type) {
+                if (x === file.type) isIMAGE = true
+            }
+            const isLt1M = file.size / 1024 / 1024 < 1
+            if (!isIMAGE) {
+                this.$message.error('上传文件只能是图片格式!')
+            }
+            if (!isLt1M) {
+                this.$message.error('上传文件大小不能超过 1MB!')
+            }
+
+            console.log(isIMAGE, isLt1M)
+
+            return isIMAGE && isLt1M
+        },
+        UploadImage(param){
+            if (!this.onBeforeUploadImage(param.file)) {
+                console.log(param.file)
+                return false
+            }
+
+            var jsonData = {name: this.add_form.name, attendance_id: parseInt(this.add_form.attendance_id, 10)}
+
+
+            uploadFile('add_attendance_user', param.file, jsonData).then(res => {
+                console.log('上传图片成功')
+                param.onSuccess()  // 上传成功的图片会显示绿色的对勾
+            }).catch(error => {
+                console.log('图片上传失败')
+                param.onError()
+            })
+        },
+
         getData() {
             getData("attendance_user_table", this.query).then(res => {
                 this.tableData = res.list;
@@ -197,6 +280,26 @@ export default {
 
 
         },
+
+        handleAdd() {
+            this.add_form = {
+                name: "",
+                attendance_id: "",
+            }
+            this.addVisible = true;
+        },
+
+        saveAdd() {
+            this.$refs.upload.submit();
+            return
+
+            this.addVisible = false;
+            let query = {
+                name : this.add_form.name,
+                attendance_id : this.add_form.attendance_id
+            }
+        },
+
         // 分页导航
         handlePageChange(val) {
             this.$set(this.query, 'pageIndex', val);
@@ -234,5 +337,31 @@ export default {
     margin: auto;
     width: 40px;
     height: 40px;
+}
+
+
+
+.avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+}
+.avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+}
+.avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
 }
 </style>
