@@ -35,8 +35,15 @@
                 <el-table-column prop="creator" label="创建者"></el-table-column>
                 <el-table-column prop="info" label="备注"></el-table-column>
                 <el-table-column prop="type" label="类型"></el-table-column>
-                <el-table-column label="操作" width="300" align="center">
+                <el-table-column prop="code" label="考勤码">
+
+                </el-table-column>
+                <el-table-column label="操作" width="450" align="center">
                     <template slot-scope="scope">
+                        <el-button
+                                icon="el-icon-edit"
+                                @click="handleGenerateCode(scope.$index, scope.row)"
+                        >刷新考勤码</el-button>
                         <el-button
                                 icon="el-icon-edit"
                                 @click="handleTimeEdit(scope.$index, scope.row)"
@@ -197,6 +204,23 @@ export default {
                 })
                 .catch(() => {});
         },
+
+        handleGenerateCode(index, row) {
+            this.$confirm('确定要刷新吗？', '提示', {
+                type: 'warning'
+            })
+                .then(() => {
+                    getData("change_attendance_code", {id: row.id}).then(res => {
+                        this.$message.success('刷新成功');
+                        this.getData()
+                    }).catch(error => {
+                        this.$message.error('刷新失败');
+                    })
+
+                })
+                .catch(() => {});
+        },
+
         // 多选操作
         handleSelectionChange(val) {
             this.multipleSelection = val;
