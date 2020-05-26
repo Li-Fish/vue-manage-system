@@ -33,6 +33,7 @@
                 <el-table-column prop="name" label="姓名"></el-table-column>
                 <el-table-column prop="attendance_title" label="所属考勤"></el-table-column>
                 <el-table-column prop="photo" label="照片"></el-table-column>
+                <el-table-column prop="date" label="时间"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -59,6 +60,7 @@
 
 <script>
 import { getData } from '../../api/index';
+import { timeConverter } from '../../utils/tools';
 export default {
     name: 'basetable',
     data() {
@@ -97,6 +99,10 @@ export default {
         getData() {
             getData("record_table", this.query).then(res => {
                 this.tableData = res.list;
+                for (let i = 0; i < this.tableData.length; ++i) {
+
+                    this.tableData[i].date = timeConverter(this.tableData[i].date)
+                }
                 this.pageTotal = res.total_num;
             }).catch(error => {
                 this.$message.error('获取数据失败');

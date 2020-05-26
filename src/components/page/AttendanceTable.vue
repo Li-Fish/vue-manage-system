@@ -35,8 +35,12 @@
                 <el-table-column prop="creator" label="创建者"></el-table-column>
                 <el-table-column prop="info" label="备注"></el-table-column>
                 <el-table-column prop="type" label="类型"></el-table-column>
-                <el-table-column label="操作" width="180" align="center">
+                <el-table-column label="操作" width="300" align="center">
                     <template slot-scope="scope">
+                        <el-button
+                                icon="el-icon-edit"
+                                @click="handleTimeEdit(scope.$index, scope.row)"
+                        >时间段</el-button>
                         <el-button
                             icon="el-icon-edit"
                             @click="handleEdit(scope.$index, scope.row)"
@@ -80,6 +84,35 @@
             </span>
         </el-dialog>
 
+        <!-- 时间段对话框 -->
+        <el-dialog title="考勤时间段" :visible.sync="timeEditVisible" width="30%">
+            <el-form ref="form" :model="form" label-width="70px">
+
+                <template v-for="(item, index) in time_list">
+                    <el-form-item>
+                        <el-time-picker
+                                is-range
+                                v-model="time_list[index]"
+                                range-separator="至"
+                                start-placeholder="开始时间"
+                                end-placeholder="结束时间"
+                                placeholder="选择时间范围">
+                        </el-time-picker>
+                        <el-button type="danger" circle icon="el-icon-minus" @click="time_list.splice(index, 1)"></el-button>
+                    </el-form-item>
+                </template>
+
+                <el-form-item style="text-align: center">
+                    <el-button type="success" icon="el-icon-plus" @click="time_list.push([new Date(), new Date()])">新增时间段</el-button>
+                </el-form-item>
+
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="timeEditVisible = false">关 闭</el-button>
+                <el-button type="primary" @click="handleTimeAdd">保 存</el-button>
+            </span>
+        </el-dialog>
+
         <!-- 新增弹出框 -->
         <el-dialog title="新增" :visible.sync="addVisible" width="30%">
             <el-form ref="add_form" :model="add_form" label-width="70px">
@@ -103,6 +136,7 @@
 
 <script>
 import { getData } from '../../api/index';
+import { dateToInt, intToDate } from '../../utils/tools';
 export default {
     name: 'basetable',
     data() {
@@ -117,6 +151,8 @@ export default {
             multipleSelection: [],
             editVisible: false,
             addVisible: false,
+            timeEditVisible: false,
+            time_list: [],
             pageTotal: 0,
             form: {},
             add_form: {},
@@ -209,6 +245,53 @@ export default {
                 row: row
             }
             this.editVisible = true;
+        },
+
+        handleTimeEdit(index, row) {
+            this.timeEditVisible = true
+
+            this.time_list = []
+
+            console.log(row)
+
+            let query = {
+                attendance_id: row.id
+            }
+
+            getData("get_attendance_date", query).then(res => {
+
+                console.log(res.date_list)
+                for(let item of res.date_list) {
+                    this.time_list.push([intToDate(item[0]), intToDate(item[1])])
+
+                }
+                console.log(this.time_list)
+                this.now_time_attendance = row.id
+                // for (let item of res)
+            }).catch(error => {
+                console.log(error)
+                this.$message.error(`加载失败`);
+            });
+        },
+
+        handleTimeAdd() {
+            this.timeEditVisible = false
+            let time_list = []
+            for(let item of this.time_list) {
+                time_list.push([dateToInt(item[0]), dateToInt(item[1])])
+            }
+
+            let query = {
+                attendance_id: this.now_time_attendance,
+                date_list: time_list
+            }
+
+            getData("upload_attendance_date", query).then(res => {
+                this.$message.success(`修改成功`);
+                this.getData()
+            }).catch(error => {
+                this.$message.error(`修改失败`);
+            });
         },
 
 
