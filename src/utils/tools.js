@@ -21,8 +21,8 @@ export function timeConverter(UNIX_timestamp){
 }
 
 export function dateToInt(time) {
-    var sec = time.getMonth();
-    var min = time.getDate();
+    var sec = time.getSeconds();
+    var min = time.getMinutes();
     var hour = time.getHours();
 
     return hour * 60 * 60 + min * 60 + sec
