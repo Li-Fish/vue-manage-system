@@ -299,11 +299,26 @@ export default {
         },
 
         handleTimeAdd() {
-            this.timeEditVisible = false
             let time_list = []
             for(let item of this.time_list) {
                 time_list.push([dateToInt(item[0]), dateToInt(item[1])])
             }
+
+            {
+                let tmp = time_list
+                tmp.sort((a, b)=>{
+                    return a[0] - b[0]
+                })
+                console.log(tmp)
+                for (let i = 1; i < tmp.length; ++i) {
+                    if (tmp[i][0] < tmp[i - 1][1]) {
+                        this.$message.error("修改失败，时间段不能重叠")
+                        return
+                    }
+                }
+            }
+
+            this.timeEditVisible = false
 
             let query = {
                 attendance_id: this.now_time_attendance,
