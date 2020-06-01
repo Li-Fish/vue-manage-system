@@ -16,8 +16,29 @@ export function timeConverter(UNIX_timestamp){
     if (sec < 10) {
         sec = '0' + sec
     }
-    var time = year + '-' + month + '-' + date + '  ' + hour + ':' + min + ':' + sec ;
+    var time = year + '-' + (month+1) + '-' + date + '  ' + hour + ':' + min + ':' + sec ;
     return time;
+}
+
+export function getWeek(date) {
+    var week = date.getDay();
+    var str
+    if (week === 0) {
+        str = '周日';
+    } else if (week === 1) {
+        str = '周一';
+    } else if (week === 2) {
+        str = '周二';
+    } else if (week === 3) {
+        str = '周三';
+    } else if (week === 4) {
+        str = '周四';
+    } else if (week === 5) {
+        str = '周五';
+    } else if (week === 6) {
+        str = '周六';
+    }
+    return str
 }
 
 export function dateToInt(time) {

@@ -150,7 +150,7 @@ export default {
         },
 
         onBeforeUploadImage(file) {
-            const file_type = ['image/jpeg', 'image/jpg', 'image/png']
+            const file_type = ['image/jpeg', 'image/jpg', 'image/user.png']
             let isIMAGE = false;
             for (let x of file_type) {
                 if (x === file.type) isIMAGE = true
