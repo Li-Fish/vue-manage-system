@@ -33,9 +33,11 @@
                 <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
                 <el-table-column prop="name" label="姓名"></el-table-column>
                 <el-table-column prop="attendance_title" label="所属考勤"></el-table-column>
-                <el-table-column prop="photo" label="照片"></el-table-column>
-                <el-table-column label="操作" width="180" align="center">
+                <el-table-column label="操作" width="300" align="center">
                     <template slot-scope="scope">
+                        <el-button
+                                @click="getPhoto(scope.$index, scope.row)"
+                        >查看图片</el-button>
                         <el-button
                             icon="el-icon-edit"
                             @click="handleEdit(scope.$index, scope.row)"
@@ -59,6 +61,11 @@
                 ></el-pagination>
             </div>
         </div>
+
+        <!-- 照片弹出框 -->
+        <el-dialog title="图片" :visible.sync="imgVisible" width="30%">
+            <el-image v-bind:src="imgURL" style="height: 500px" fit="contain"></el-image>
+        </el-dialog>
 
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
@@ -96,7 +103,7 @@
                     :auto-upload="false"
                     :on-change="onFileChange"
             >
-                <img v-if="imageUrl" :src="imageUrl" class="avatar" style="width: 100%">
+                <el-image v-if="imageUrl" :src="imageUrl" fit="contain" class="avatar" style="width: 100%"></el-image>
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
 
@@ -110,7 +117,7 @@
 </template>
 
 <script>
-import { getData, uploadFile } from '../../api/index';
+    import { base_url, getData, uploadFile } from '../../api/index';
 export default {
     name: 'basetable',
     data() {
@@ -125,6 +132,8 @@ export default {
             multipleSelection: [],
             editVisible: false,
             addVisible: false,
+            imgVisible: false,
+            imgURL: '',
             pageTotal: 0,
             form: {},
             add_form: {},
@@ -173,16 +182,28 @@ export default {
                 return false
             }
 
+            console.log('123')
+
             var jsonData = {name: this.add_form.name, attendance_id: parseInt(this.add_form.attendance_id, 10)}
 
 
             uploadFile('add_attendance_user', param.file, jsonData).then(res => {
-                console.log('上传图片成功')
-                param.onSuccess()  // 上传成功的图片会显示绿色的对勾
+                this.$message.success('添加成功')
+                this.addVisible = false
             }).catch(error => {
-                console.log('图片上传失败')
-                param.onError()
+                this.$message.error('添加失败')
             })
+        },
+
+        getPhoto(index, row) {
+
+            let url = row.photo.split('/')
+            let file_name = url[url.length - 1]
+            let img_dir = url[url.length - 2]
+
+
+            this.imgURL = base_url + 'image/' + img_dir + '/' + file_name
+            this.imgVisible = true
         },
 
         getData() {
@@ -282,6 +303,9 @@ export default {
         },
 
         handleAdd() {
+            this.imageUrl = null
+            this.fileList = []
+            console.log(this.fileList)
             this.add_form = {
                 name: "",
                 attendance_id: "",
@@ -291,13 +315,6 @@ export default {
 
         saveAdd() {
             this.$refs.upload.submit();
-            return
-
-            this.addVisible = false;
-            let query = {
-                name : this.add_form.name,
-                attendance_id : this.add_form.attendance_id
-            }
         },
 
         // 分页导航

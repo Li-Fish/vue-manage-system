@@ -1,6 +1,6 @@
 import request from '../utils/request';
 
-const base_url = 'http://127.0.0.1:5000/api/';
+export const base_url = 'http://127.0.0.1:5000/api/';
 
 export const fetchData = query => {
     return request({

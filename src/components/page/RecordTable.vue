@@ -32,10 +32,12 @@
                 <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
                 <el-table-column prop="name" label="姓名"></el-table-column>
                 <el-table-column prop="attendance_title" label="所属考勤"></el-table-column>
-                <el-table-column prop="photo" label="照片"></el-table-column>
                 <el-table-column prop="date" label="时间"></el-table-column>
-                <el-table-column label="操作" width="180" align="center">
+                <el-table-column label="操作" width="200" align="center">
                     <template slot-scope="scope">
+                        <el-button
+                                @click="getPhoto(scope.$index, scope.row)"
+                        >查看图片</el-button>
                         <el-button
                             type="danger"
                             icon="el-icon-delete"
@@ -44,6 +46,12 @@
                     </template>
                 </el-table-column>
             </el-table>
+
+            <!-- 照片弹出框 -->
+            <el-dialog title="图片" :visible.sync="imgVisible" width="30%">
+                <el-image v-bind:src="imgURL" style="height: 500px" fit="contain"></el-image>
+            </el-dialog>
+
             <div class="pagination">
                 <el-pagination
                     background
@@ -59,7 +67,7 @@
 </template>
 
 <script>
-import { getData } from '../../api/index';
+    import { base_url, getData } from '../../api/index';
 import { timeConverter } from '../../utils/tools';
 export default {
     name: 'basetable',
@@ -77,7 +85,9 @@ export default {
             pageTotal: 0,
             form: {},
             idx: -1,
-            id: -1
+            id: -1,
+            imgVisible: false,
+            imgURL: ''
         };
     },
     created() {
@@ -96,6 +106,17 @@ export default {
     },
 
     methods: {
+        getPhoto(index, row) {
+
+            let url = row.photo.split('/')
+            let file_name = url[url.length - 1]
+            let img_dir = url[url.length - 2]
+
+
+            this.imgURL = base_url + 'image/' + img_dir + '/' + file_name
+            this.imgVisible = true
+        },
+
         getData() {
             getData("record_table", this.query).then(res => {
                 this.tableData = res.list;
