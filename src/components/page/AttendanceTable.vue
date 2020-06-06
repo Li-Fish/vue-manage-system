@@ -93,8 +93,10 @@
 
         <!-- 时间段对话框 -->
         <el-dialog title="考勤时间段" :visible.sync="timeEditVisible" width="30%">
+            <el-checkbox-group v-model="week_list" style="text-align: center; margin-bottom: 30px">
+                <el-checkbox-button v-for="week in weeks" :label="week" :key="week">{{week}}</el-checkbox-button>
+            </el-checkbox-group>
             <el-form ref="form" :model="form" label-width="70px">
-
                 <template v-for="(item, index) in time_list">
                     <el-form-item>
                         <el-time-picker
@@ -160,6 +162,8 @@ export default {
             addVisible: false,
             timeEditVisible: false,
             time_list: [],
+            week_list: [],
+            weeks: [1, 2, 3, 4, 5, 6, 7],
             pageTotal: 0,
             form: {},
             add_form: {},
@@ -272,30 +276,35 @@ export default {
         },
 
         handleTimeEdit(index, row) {
-            this.timeEditVisible = true
+            this.$confirm('修改时间会使之前考勤失效，确定要修改吗？', '提示', {
+                type: 'warning'
+            })
+                .then(() => {
 
-            this.time_list = []
+                    this.time_list = []
 
-            console.log(row)
+                    let query = {
+                        attendance_id: row.id
+                    }
 
-            let query = {
-                attendance_id: row.id
-            }
+                    getData("get_attendance_date", query).then(res => {
+                        for(let item of res.time_list) {
+                            this.time_list.push([intToDate(item[0]), intToDate(item[1])])
 
-            getData("get_attendance_date", query).then(res => {
+                        }
+                        console.log(this.time_list)
+                        this.week_list = res.week_list
+                        this.now_time_attendance = row.id
+                        this.timeEditVisible = true
+                    }).catch(error => {
+                        console.log(error)
+                        this.$message.error(`加载失败`);
+                    });
 
-                console.log(res.date_list)
-                for(let item of res.date_list) {
-                    this.time_list.push([intToDate(item[0]), intToDate(item[1])])
+                })
+                .catch(() => {});
 
-                }
-                console.log(this.time_list)
-                this.now_time_attendance = row.id
-                // for (let item of res)
-            }).catch(error => {
-                console.log(error)
-                this.$message.error(`加载失败`);
-            });
+
         },
 
         handleTimeAdd() {
@@ -322,7 +331,8 @@ export default {
 
             let query = {
                 attendance_id: this.now_time_attendance,
-                date_list: time_list
+                date_list: time_list,
+                week_list: this.week_list
             }
 
             getData("upload_attendance_date", query).then(res => {
