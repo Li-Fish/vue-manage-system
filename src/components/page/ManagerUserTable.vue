@@ -3,14 +3,13 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 考勤用户
+                    <i class="el-icon-lx-cascades"></i> 管理用户
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-input v-model="query.name" placeholder="姓名" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
-                <el-input v-model="query.attendance" placeholder="所属考勤" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
+                <el-input v-model="query.username" placeholder="用户名" class="handle-input mr10" @keyup.enter.native="handleSearch()"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
                 <el-button type="success" icon="el-icon-plus" @click="handleAdd">新增用户</el-button>
                 <el-button
@@ -31,13 +30,10 @@
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-                <el-table-column prop="name" label="姓名"></el-table-column>
-                <el-table-column prop="attendance_title" label="所属考勤"></el-table-column>
-                <el-table-column label="操作" width="300" align="center">
+                <el-table-column prop="username" label="用户名"></el-table-column>
+                <el-table-column prop="password" label="密码"></el-table-column>
+                <el-table-column label="操作" width="200" align="center">
                     <template slot-scope="scope">
-                        <el-button
-                                @click="getPhoto(scope.$index, scope.row)"
-                        >查看图片</el-button>
                         <el-button
                             icon="el-icon-edit"
                             @click="handleEdit(scope.$index, scope.row)"
@@ -62,16 +58,14 @@
             </div>
         </div>
 
-        <!-- 照片弹出框 -->
-        <el-dialog title="图片" :visible.sync="imgVisible" width="30%">
-            <el-image v-bind:src="imgURL" style="height: 500px" fit="contain"></el-image>
-        </el-dialog>
-
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
             <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="姓名">
-                    <el-input v-model="form.name"></el-input>
+                <el-form-item label="用户名">
+                    <el-input v-model="form.username"></el-input>
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input v-model="form.password"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -83,29 +77,13 @@
         <!-- 新增弹出框 -->
         <el-dialog title="新增" :visible.sync="addVisible" width="30%">
             <el-form ref="add_form" :model="add_form" label-width="70px">
-                <el-form-item label="姓名">
-                    <el-input v-model="add_form.name"></el-input>
+                <el-form-item label="用户名">
+                    <el-input v-model="add_form.username"></el-input>
                 </el-form-item>
-                <el-form-item label="考勤ID">
-                    <el-input v-model="add_form.attendance_id"></el-input>
+                <el-form-item label="密码">
+                    <el-input v-model="add_form.password"></el-input>
                 </el-form-item>
             </el-form>
-
-
-            <el-upload
-                    class="upload-demo"
-                    ref="upload"
-                    action="string"
-                    accept="image/jpeg,image/png,image/jpg"
-                    :file-list="fileList"
-                    :show-file-list="false"
-                    :http-request="UploadImage"
-                    :auto-upload="false"
-                    :on-change="onFileChange"
-            >
-                <el-image v-if="imageUrl" :src="imageUrl" fit="contain" class="avatar" style="width: 100%"></el-image>
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-            </el-upload>
 
             <span slot="footer" class="dialog-footer">
                 <el-button @click="addVisible = false">取 消</el-button>
@@ -123,8 +101,7 @@ export default {
     data() {
         return {
             query: {
-                name: '',
-                attendance: '',
+                username: '',
                 pageIndex: 1,
                 pageSize: 10
             },
@@ -133,15 +110,11 @@ export default {
             editVisible: false,
             addVisible: false,
             imgVisible: false,
-            imgURL: '',
             pageTotal: 0,
             form: {},
             add_form: {},
             idx: -1,
             id: -1,
-
-            fileList: [],
-            imageUrl: null,
         };
     },
     created() {
@@ -151,64 +124,8 @@ export default {
         this.getData();
     },
     methods: {
-        onFileChange(file, fileList) {
-            if (fileList.length > 0) {
-                this.fileList = [fileList[fileList.length - 1]]  // 这一步，是 展示最后一次选择的csv文件
-            }
-            this.imageUrl = URL.createObjectURL(file.raw);
-        },
-
-        onBeforeUploadImage(file) {
-            const file_type = ['image/jpeg', 'image/jpg', 'image/user.png']
-            let isIMAGE = false;
-            for (let x of file_type) {
-                if (x === file.type) isIMAGE = true
-            }
-            const isLt1M = file.size / 1024 / 1024 < 1
-            if (!isIMAGE) {
-                this.$message.error('上传文件只能是图片格式!')
-            }
-            if (!isLt1M) {
-                this.$message.error('上传文件大小不能超过 1MB!')
-            }
-
-            console.log(isIMAGE, isLt1M)
-
-            return isIMAGE && isLt1M
-        },
-        UploadImage(param){
-            if (!this.onBeforeUploadImage(param.file)) {
-                console.log(param.file)
-                return false
-            }
-
-            console.log('123')
-
-            var jsonData = {name: this.add_form.name, attendance_id: parseInt(this.add_form.attendance_id, 10)}
-
-
-            uploadFile('add_attendance_user', param.file, jsonData).then(res => {
-                this.$message.success('添加成功')
-                this.addVisible = false
-                this.getData()
-            }).catch(error => {
-                this.$message.error('添加失败')
-            })
-        },
-
-        getPhoto(index, row) {
-
-            let url = row.photo.split('/')
-            let file_name = url[url.length - 1]
-            let img_dir = url[url.length - 2]
-
-
-            this.imgURL = base_url + 'image/' + img_dir + '/' + file_name
-            this.imgVisible = true
-        },
-
         getData() {
-            getData("attendance_user_table", this.query).then(res => {
+            getData("manager_user_table", this.query).then(res => {
                 this.tableData = res.list;
                 this.pageTotal = res.total_num;
             }).catch(error => {
@@ -227,7 +144,7 @@ export default {
                 type: 'warning'
             })
                 .then(() => {
-                    getData("delete_attendance_user", {id: row.id}).then(res => {
+                    getData("delete_manager_user", {id: row.id}).then(res => {
                         this.$message.success('删除成功');
                         this.tableData.splice(index, 1);
                     }).catch(error => {
@@ -258,7 +175,7 @@ export default {
                 let waitList = []
 
                 for (let i = 0; i < length; i++) {
-                    getData("delete_attendance_user", {id: this.multipleSelection[i].id}).then(res => {
+                    getData("delete_manager_user", {id: this.multipleSelection[i].id}).then(res => {
                         count += 1
                     }).catch(error => {
                         fail += 1
@@ -279,7 +196,8 @@ export default {
         handleEdit(index, row) {
             this.idx = index;
             this.form = {
-                name: row.name,
+                username: row.username,
+                password: row.password,
                 row: row
             }
             this.editVisible = true;
@@ -290,33 +208,39 @@ export default {
 
             let query = {
                 id : this.tableData[this.idx].id,
-                name : this.form.name,
+                username : this.form.username,
+                password : this.form.password
             }
 
-            getData("update_attendance_user", query).then(res => {
+            getData("update_manager_user", query).then(res => {
                 this.$message.success(`修改第 ${this.idx + 1} 行成功`);
                 this.form.row.name = this.form.name;
                 this.getData()
             }).catch(error => {
                 this.$message.error(`修改第 ${this.idx + 1} 行失败`);
             });
-
-
         },
 
         handleAdd() {
-            this.imageUrl = null
-            this.fileList = []
-            console.log(this.fileList)
             this.add_form = {
-                name: "",
-                attendance_id: "",
+                username: "",
+                password: ""
             }
             this.addVisible = true;
         },
 
         saveAdd() {
-            this.$refs.upload.submit();
+            let query = {
+                username : this.add_form.username,
+                password : this.add_form.password,
+            }
+            getData("add_manager_user", query).then(res => {
+                this.$message.success(`添加成功`);
+                this.getData()
+            }).catch(error => {
+                this.$message.error(`添加失败`);
+            });
+            this.addVisible = false;
         },
 
         // 分页导航

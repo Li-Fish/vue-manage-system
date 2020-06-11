@@ -386,6 +386,7 @@ export default {
                 this.form.row.title = this.form.title;
                 this.form.row.info = this.form.info;
                 this.form.row.type = this.form.type;
+                this.getData()
             }).catch(error => {
                 this.$message.error(`修改第 ${this.idx + 1} 行失败`);
             });

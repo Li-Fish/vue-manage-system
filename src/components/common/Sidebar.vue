@@ -77,6 +77,11 @@ export default {
                     title: '考勤记录'
                 },
                 {
+                    icon: 'el-icon-lx-friend',
+                    index: 'manager_user_table',
+                    title: '管理用户'
+                },
+                {
                     icon: 'el-icon-lx-copy',
                     index: 'tabs',
                     title: 'tab选项卡'

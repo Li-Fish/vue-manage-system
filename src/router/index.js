@@ -40,6 +40,11 @@ export default new Router({
                     meta: { title: '考勤记录' }
                 },
                 {
+                    path: '/manager_user_table',
+                    component: () => import(/* webpackChunkName: "table" */ '../components/page/ManagerUserTable.vue'),
+                    meta: { title: '管理用户' }
+                },
+                {
                     path: '/tabs',
                     component: () => import(/* webpackChunkName: "tabs" */ '../components/page/Tabs.vue'),
                     meta: { title: 'tab选项卡' }
